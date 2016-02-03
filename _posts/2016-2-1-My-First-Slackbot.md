@@ -3,17 +3,27 @@ layout: post
 title: Building My First Slackbot to Query Channel History
 ---
 
+I spent the last couple days building my first Slack bot: a bot to search through all the past messages in a channel and tell me which messages don't have emoji reactions, which is super useful for task management.
+
 In this post, I will:
 
-* Give a little bit of background
+* Give a little bit of background about why I built this bot
 * Run through the logic of what exactly this app will do, with some notes about discoveries I made along the way
 * Walk through some required initial setup (set up the Slack integration, install a couple of node libraries)
 * Provide a couple of links to resources I reference
 * Give the full final code, with inline commenting to walk through what is happening
 
+**Who is this for?*** While pretty much anyone should be able to understand the background and the general idea of what I'm doing, but this post is mostly targeted at people like me, who like to skim through articles and look directly at code to figure out how to do things. I'm not going to dive too deeply into the principles of each step, or why I structured my code certain ways. I also won't walk through setting up node or other basic pre-requisites, but there are lots of resources on the internet about that. You can do it!
+
 ## Background
 
-We started using Slack in the fall of 2014, and at the time we weren’t totally sure how it was going to fit in to our workflow. Somehow between then and now, slack became my task management tool. I wanted a simple task management interface, where I could add tasks quickly from anywhere, and see at a glance whether a task was completed. Slack already had this functionality built-in: messaging, and emoji reactions. So I created a private channel for logging my tasks, and give them a green checkmark as I complete them, or a skull to kill the task. I'm usually pretty good about tagging tasks as either dead or complete, but every once in a while one slips through the cracks, and gets buried in my channel history. The one thing Slack is missing is a way to round up all those unresolved tasks and list them for me. This seemed like a great reason to build my first bot.
+Shortly after we started using Slack on our team in 2014, it also became my task management tool. I hate having my notes spread over multiple systems, and Slack meets all my main task-management-system requirements: 
+
+* Available on my Desktop pretty much all day (Slack app)
+* Add tasks quickly from anywhere (messaging)
+* See at a glance whether a task was completed (emoji reactions)
+
+I use a private channel for logging my tasks, and give them a green checkmark as I complete them, or a skull to kill the task. I'm usually pretty good about tagging tasks as either dead or complete, but every once in a while one slips through the cracks, and gets buried in my channel history. Slack doesn't have a way to round up and list my "unresolved" (i.e. un-marked) "tasks" (i.e., messages), so I decided to build a bot to do it.
 
 I don't have a ton of experience writing node apps. I've written a few things here and there, but so far I haven't written enough for it to become something I can just rattle off the top of my head. But I figured, what the hey! Let's do this with node.
 
@@ -124,146 +134,152 @@ var bot;
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var getChannelHistory = function() {
-    this.get = function(family, value, callback) {
-    var xhr = new XMLHttpRequest();
-    // This builds the actual structure of the API call using our provided variables
-    var url = "https://" + team + ".slack.com/api/" + family + ".history?token=" + token + "&channel=" + value;
-    xhr.onreadystatechange = function() { 
-            if (xhr.readyState == 4 && xhr.status == 200)
-                callback(xhr.responseText);
-        }
-        xhr.open("GET", url, true); 
-        xhr.send();
+  this.get = function(family, value, callback) {
+  var xhr = new XMLHttpRequest();
+  // This builds the actual structure of the API call using our provided variables
+  var url = "https://" + team + ".slack.com/api/" + family + ".history?token=" + token + "&channel=" + value;
+  xhr.onreadystatechange = function() { 
+    if (xhr.readyState == 4 && xhr.status == 200)
+      callback(xhr.responseText);
     }
+    xhr.open("GET", url, true); 
+    xhr.send();
+  }
 }
 
 // Tell us when the app is running
 slackClient.on('loggedIn', function(user, team) {
-    bot = user;
-    console.log("Logged in as " + user.name
-        + " of " + team.name + ", but not yet connected");
+  bot = user;
+  console.log("Logged in as " + user.name
+    + " of " + team.name + ", but not yet connected");
 });
 
 slackClient.on('open', function() {
 
-    // Find out which public channels the bot is a member of
-    var botChannels = Object.keys(slackClient.channels)
-        .map(function (k) { return slackClient.channels[k]; })
-        .filter(function (c) { return c.is_member; })
-        .map(function (c) { return c.name; });
+  // Find out which public channels the bot is a member of
+  var botChannels = Object.keys(slackClient.channels)
+    .map(function (k) { return slackClient.channels[k]; })
+    .filter(function (c) { return c.is_member; })
+    .map(function (c) { return c.name; });
 
-    // Find out which private channels the bot is a member of
-    var botGroups = Object.keys(slackClient.groups)
-        .map(function (k) { return slackClient.groups[k]; })
-        .filter(function (g) { return g.is_open && !g.is_archived; })
-        .map(function (g) { return g.name; });
+  // Find out which private channels the bot is a member of
+  var botGroups = Object.keys(slackClient.groups)
+    .map(function (k) { return slackClient.groups[k]; })
+    .filter(function (g) { return g.is_open && !g.is_archived; })
+    .map(function (g) { return g.name; });
  
-    // Tell us when the bot is connected
-    console.log('Connected as ' + slackClient.self.name + ' of ' + slackClient.team.name);
+  // Tell us when the bot is connected
+  console.log('Connected as ' + slackClient.self.name + ' of ' + slackClient.team.name);
  
-    // Print our list of channels and groups that we found above in the console
-    if (botChannels.length > 0) {
-        console.log('You are in these public channels: ' + botChannels.join(', '));
-    } else {
-        console.log('You are not in any public channels.');
-    }
+  // Print our list of channels and groups 
+  // that we found above in the console
+  if (botChannels.length > 0) {
+    console.log('You are in these public channels: ' + botChannels.join(', '));
+  } else {
+    console.log('You are not in any public channels.');
+  }
  
-    if (botGroups.length > 0) {
-       console.log('You are in these private channels: ' + botGroups.join(', '));
-    } else {
-        console.log('You are not in any private channels.');
-    }
+  if (botGroups.length > 0) {
+     console.log('You are in these private channels: ' + botGroups.join(', '));
+  } else {
+    console.log('You are not in any private channels.');
+  }
 });
 
-// What to do when a message is posted to one of the bot's channels
+// What to do when a message is posted 
+// to one of the bot's channels--
 // This is the real meat of our app
 slackClient.on('message', function(message) {
-    // Ignore the bot's own messages
-    if (message.user == bot.id) return;
+  // Ignore the bot's own messages
+  if (message.user == bot.id) return;
  
-    // Get the current channel, so we know where to post messages to later
-    var channel = slackClient.getChannelGroupOrDMByID(message.channel);
+  // Get the current channel, 
+  // so we know where to post messages to later
+  var channel = slackClient.getChannelGroupOrDMByID(message.channel);
 
-    // We're wrapping our functionality in an IF statement
-    // to only respond to messages directed at this bot
-    if (message.type === 'message' && message.text.length >= 0 && message.text.indexOf(slackClient.self.id) > -1) { 
-        // Take the message that was sent to the bot
-        // And split off just the relevant bit
-        // See NOTE TKTK
-        searchString = message.text.split(" ").pop();
+  // We're wrapping our functionality in an IF statement
+  // to only respond to messages directed at this bot
+  if (message.type === 'message' && message.text.length >= 0 && message.text.indexOf(slackClient.self.id) > -1) { 
+    // Take the message that was sent to the bot
+    // And split off just the relevant bit
+    // See NOTE TKTK
+    searchString = message.text.split(" ").pop();
 
-        // Print out the name of the channel the bot is analyzing
-        console.log("Attempting to query channel: " + searchString);
-        
-        // Retrieve the requested channel object
-        // using functions from the slack-client library
-        var myChannel = slackClient.getChannelGroupOrDMByName(searchString);
+    // Print out the name of the channel the bot is analyzing
+    console.log("Attempting to query channel: " + searchString);
+    
+    // Retrieve the requested channel object
+    // using functions from the slack-client library
+    var myChannel = slackClient.getChannelGroupOrDMByName(searchString);
 
-        // Check to verify if we've returned a valid channel
-        if (typeof myChannel != "undefined") {            
-            // Get the channel ID from the channel object
-            var myChannelID = myChannel['id'];
+    // Check to verify if we've returned a valid channel
+    if (typeof myChannel != "undefined") {      
+      // Get the channel ID from the channel object
+      var myChannelID = myChannel['id'];
 
-            // Determine whether this is a public or private channel (i.e., group)
-            // by looking at the data in the channel object
-            if (myChannel.getType() == 'Group') {
-                family = "groups";
-            } else {
-                family = "channels";
-            };
+      // Determine whether this is a public 
+      // or private channel (i.e., group)
+      // by looking at the data in the channel object
+      if (myChannel.getType() == 'Group') {
+        family = "groups";
+      } else {
+        family = "channels";
+      };
 
-            // Get the message history for the channel
-            // using our custom API call
-            history = new getChannelHistory();
-            history.get(family, myChannelID, function(response) {
-                // Now that we have our messages, let's parse them to make them readable
-                json = JSON.parse(response);
+      // Get the message history for the channel
+      // using our custom API call
+      history = new getChannelHistory();
+      history.get(family, myChannelID, function(response) {
+        // Now that we have our messages, 
+        // let's parse them to make them readable
+        json = JSON.parse(response);
 
-                // The history object had a few children, so we're just pulling out the messages child
-                mymessages = json['messages'];
+        // The history object had a few children, 
+        // so we're just pulling out the "messages" child
+        mymessages = json['messages'];
 
-                // Create an array to hold our filtered list of messages
-                var unresolved = [];
+        // Create an array to hold our filtered list of messages
+        var unresolved = [];
 
-                // Filter for messages that don't have reactions
-                for (var i = 0; mymessages.length > i; i++) {
-                    // For each message, get the reactions (if any)
-                    var msgStatus = mymessages[i]['reactions'];
+        // Filter for messages that don't have reactions
+        for (var i = 0; mymessages.length > i; i++) {
+          // For each message, get the reactions (if any)
+          var msgStatus = mymessages[i]['reactions'];
 
-                    // If the message has no reactions...
-                    if (typeof msgStatus == "undefined") {
-                        // ...add the message to our array
-                        unresolved.push(mymessages[i].text);
-                    }
-                };
+          // If the message has no reactions...
+          if (typeof msgStatus == "undefined") {
+            // ...add the message to our array
+            unresolved.push(mymessages[i].text);
+          }
+        };
 
-                // Once we've finished looping through all the messages
-                // count how many didn't have reactions, for logging
-                var myCount = unresolved.length;
+        // Once we've finished looping through all the messages
+        // count how many didn't have reactions, for logging
+        var myCount = unresolved.length;
 
-                // Combine our array of unresolved messages into one line
-                // so the bot can send just one message to slack
-                var list = unresolved.join("\n");
+        // Combine our array of unresolved messages into one line
+        // so the bot can send just one message to slack
+        var list = unresolved.join("\n");
 
-                // Print out our final, single message to slack
-                channel.send("Your Unresolved Items: \n" + list);
+        // Print out our final, single message to slack
+        channel.send("Your Unresolved Items: \n" + list);
 
-                // Print to the console that the query was successful,
-                // and how many unresolved messages were found
-                console.log("Query successful! Returned " + myCount + " items")
-            });
+        // Print to the console that the query was successful,
+        // and how many unresolved messages were found
+        console.log("Query successful! Returned " + myCount + " items")
+      });
 
-        // If the message to the bot is formatted wrong, then do this:
-        } else {
-            // Tell the user how to format their request correctly
-            channel.send("I'm sorry, I don't understand. I need you to end your sentence with a valid channel name of which I am a member.");
+    // If the message to the bot is formatted wrong, then do this:
+    } else {
+      // Tell the user how to format their request correctly
+      channel.send("I'm sorry, I don't understand. I need you to end your sentence with a valid channel name of which I am a member.");
 
-            // Also print to the console that the query failed, and give some helpful pointers
-            console.log("Query FAILED.");
-            console.log("Did your sentence end with a valid channel name?");
-            console.log("Have you invited Taskbot to join the requested channel?");
-        }
-    }; 
+      // Also print to the console that the query failed, and give some helpful pointers
+      console.log("Query FAILED.");
+      console.log("Did your sentence end with a valid channel name?");
+      console.log("Have you invited Taskbot to join the requested channel?");
+    }
+  }; 
 });
 
 slackClient.login();
