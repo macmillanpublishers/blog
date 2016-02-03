@@ -110,7 +110,7 @@ Let's start by listing out what we'll be doing in our bot code:
 
 <p>Instead of printing each unresolved task as it's own message to Slack, I want the bot to just post a single list of my unresolved tasks. We can use new lines (\n) in Slack messages to create line breaks within a single message.</p></li>
 
-<li><p><strong>Print out our final, single message to slack</strong></p></li>
+<li><p><strong>Print out our final, single message to Slack</strong></p></li>
 <li><p><strong>Print to the console that the query was successful</strong></p></li>
 <li><p><strong>Finally, if the message to the bot was formatted wrong, print out some help text instead of doing all that other stuff</strong></p></li>
 </ol>
