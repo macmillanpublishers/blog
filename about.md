@@ -14,7 +14,7 @@ This blog collects posts from Macmillan's Workflows team, who are responsible fo
 
 #### [Nellie McKesson](http://twitter.com/nelliemckesson), Sr. Mgr., Content Workflows
 
-<img src="https://github.com/macmillanpublishers/blog/blob/gh-pages/images/team_photo_nellie.jpg"/>
+<img src="https://raw.githubusercontent.com/macmillanpublishers/blog/gh-pages/images/team_photo_nellie.jpg"/>
 
 ### Contact me
 
