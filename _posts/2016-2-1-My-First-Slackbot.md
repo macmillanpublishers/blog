@@ -38,7 +38,7 @@ Both projects started with the _slack-client_ API wrapper, so I went ahead and u
 
 ## Setup
 
-In order to test and ultimately run Taskbot, you need to set up the integration for your slack team. Don't be intimidated: it's very easy and there's no real risk (you're not using up precious resources or anything). [Follow this link to your Slack settings](https://my.slack.com/services/new/bot), pick a username, and add the integration. Slack will return an API token when the bot is activated--copy this! You'll need it in the final code.
+In order to test and ultimately run TaskBot, you need to set up the integration for your slack team. Don't be intimidated: it's very easy and there's no real risk (you're not using up precious resources or anything). [Follow this link to your Slack settings](https://my.slack.com/services/new/bot), pick a username, and add the integration. Slack will return an API token when the bot is activated--copy this! You'll need it in the final code.
 
 Once the integration is set up, you'll also need to invite your bot to some channels. She needs to be a member of any channels you want her to participate in (or, in this case, analyze). Invite her the same way you'd invite any user.
 
@@ -75,32 +75,32 @@ Let's start by listing out what we'll be doing in our bot code:
 
 <li><p><strong>Only respond to messages directed at this bot</strong></p>
 
-<p>You need to decide how you're going to talk to your bot. Do you want her to respond to all messages posted to a channel, or just messages directed at her? And do you want her to receive input?</p>
+<p>We don't want our bot to respond to every single message posted in a channel--she only needs to pay attention when someone mentions her name.</p></li>
 
-<p>For TaskBot, I chose to require a structured input message. When users want to call TaskBot, they must use the following format: “@taskbot: channel-name” (e.g., “@taskbot: nellie-notes”). This way, we can split up the message and feed TaskBot the name of the channel she should analyze; she'll use this to find the channel object, using functions that are part of the slack-client library. (Though the reality is that TaskBot is a bit smarter than we’re giving her credit for: as long as her name is referenced in the message, and the very last item in the message is a channel name, she’ll know what to do.)</p></li>
+<li><p><strong>Take the message that was sent to the bot and pull out just the name of the channel that is being queried</strong></p>
 
-<li><p><strong>Take the message that was sent to the bot and get the channel name</strong></p></li>
+<p>For TaskBot, I chose to require a structured input message. When users want to call TaskBot, they must use the following format: “@taskbot: channel-name” (e.g., “@taskbot: nellie-notes”). This way, we can split up the message and feed TaskBot just the name of the channel she should analyze; she'll use this to find the channel object, using functions that are part of the _slack-client_ library. (Though the reality is that TaskBot is a bit smarter than we’re giving her credit for: as long as her name is referenced in the message, and the very last item in the message is a channel name, she’ll know what to do. So you could also say, "Hey @taskbot you incredible genius, tell me the unresolved tasks that are in nellie-notes".)</p></li>
 
 <li><p><strong>Retrieve the requested channel object using functions from the slack-client library</strong></p>
 
-<p>I couldn't find robust documentation of all the functions available in the slack-client library, but you can see what most of your options are by looking at the library code. For example, the function we'll be using can be found here: https://github.com/slackhq/node-slack-client/blob/master/src/client.coffee#L293.</p></li>
+<p>I couldn't find robust documentation of all the functions available in the slack-client library, but you can see what most of your options are by looking at the library code. For example, the function we'll be using to get a channel object by it's name [can be found here](https://github.com/slackhq/node-slack-client/blob/master/src/client.coffee#L293).</p></li>
 
-<li><p><strong>Check to verify if we've returned a valid channel</strong></p></li>
+<li><p><strong>Check to verify if we've returned a valid channel object</strong></p></li>
 
 <li><p><strong>Get the channel ID from the channel object</strong></p></li>
 
-<p>channels.history and groups.history (see the following note) require a channel ID. First you have to get the channel object, and then get the ID.</p></li>
+<p><em>channels.history</em> and <em>groups.history</em> (see the following note) require a channel ID. First you have to get the channel object, and then get the ID from that object.</p></li>
 
 <li><p><strong>Determine whether this is a public or private channel (i.e., group) by looking at the data in the channel object</strong></p>
 
-<p>Public channels and private channels need different api calls. Although this bot is just for me right now in my private channels, eventually I'll implement a similar collaborative channel for my team to track which issues and support requests we’re each working on, so the bot needs to be able to handle both. Fortunately the calls are pretty similar: public channels need the prefix “channels”, and private channels need the prefix “groups”. The specific function calls are the same for both, so all we need to worry about is swapping out the prefix as appropriate.
+<p>Public channels and private channels need different API calls. Although this bot is just for me right now in my private channels, eventually I'll implement a similar collaborative channel for my team to track which issues and support requests we’re each working on, so the bot needs to be able to handle both. Fortunately the calls are pretty similar: public channels need the prefix “channels”, and private channels need the prefix “groups”. The specific function calls are the same for both, so all we need to worry about is swapping out the prefix as appropriate.
 </p></li>
 
 <li><p><strong>Get the message history for the channel using a custom API call</strong></p>
 
-<p>I couldn't get the slack-client history-fetching functions to work for me, so I decided to write my own API call function instead. It turns out that writing a JavaScript function to make an api call for a channel or group is actually pretty simple. You can use the standard http request format, and follow the format listed in the slack API docs (e.g., https://api.slack.com/methods/channels.history). The format for our history API call will be as follows: _https://YOURTEAM.slack.com/api/channels.history?token=YOURTOKEN&amp;channel=CHANNELID_.</p>
+<p>I couldn't get the _slack-client_ library's history-fetching functions to work for me, so I decided to write my own API call function instead. It turns out that writing a JavaScript function to make an API call for a channel or group is actually pretty simple. You can use the standard httprequest format, and follow the url format listed in the slack API docs (https://api.slack.com/methods/channels.history). The url format for our channels.history API call will be as follows: _https://YOURTEAM.slack.com/api/channels.history?token=YOURTOKEN&amp;channel=CHANNELID_.</p>
 
-<p>Our http request is going to run asynchronously, so remember that asynchronous functions just kind of run whenever it's convenient! This means that once we get our result from the API call, we need to put all the code that is going to work on the returned data inside our function.</p>
+<p>Our http request is going to run asynchronously, so remember that asynchronous functions just kind of run whenever it's convenient! This means that once we get our result from the API call, we need to put all the code that is going to do something with the returned data _inside_ our function.</p>
 
 <p>FYI, the <em>channels.history</em> API call, in its default form, maxes out at 100 messages. I'm pretty sure there's a way to get more pages of results after that, but I didn't bother trying to add that functionality. If there are more than 100 tasks between me and an unresolved task, I have bigger problems.</p></li>
 
@@ -286,7 +286,7 @@ slackClient.on('message', function(message) {
       // Also print to the console that the query failed, and give some helpful pointers
       console.log("Query FAILED.");
       console.log("Did your sentence end with a valid channel name?");
-      console.log("Have you invited Taskbot to join the requested channel?");
+      console.log("Have you invited TaskBot to join the requested channel?");
     }
   }; 
 });
