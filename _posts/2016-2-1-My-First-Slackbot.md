@@ -79,11 +79,11 @@ Let's start by listing out what we'll be doing in our bot code:
 
 <li><p><strong>Take the message that was sent to the bot and pull out just the name of the channel that is being queried</strong></p>
 
-<p>For TaskBot, I chose to require a structured input message. When users want to call TaskBot, they must use the following format: “@taskbot: channel-name” (e.g., “@taskbot: nellie-notes”). This way, we can split up the message and feed TaskBot just the name of the channel she should analyze; she'll use this to find the channel object, using functions that are part of the _slack-client_ library. (Though the reality is that TaskBot is a bit smarter than we’re giving her credit for: as long as her name is referenced in the message, and the very last item in the message is a channel name, she’ll know what to do. So you could also say, "Hey @taskbot you incredible genius, tell me the unresolved tasks that are in nellie-notes".)</p></li>
+<p>For TaskBot, I chose to require a structured input message. When users want to call TaskBot, they must use the following format: “@taskbot: channel-name” (e.g., “@taskbot: nellie-notes”). This way, we can split up the message and feed TaskBot just the name of the channel she should analyze; she'll use this to find the channel object, using functions that are part of the <em>slack-client</em> library. (Though the reality is that TaskBot is a bit smarter than we’re giving her credit for: as long as her name is referenced in the message, and the very last item in the message is a channel name, she’ll know what to do. So you could also say, "Hey @taskbot you incredible genius, tell me the unresolved tasks that are in nellie-notes".)</p></li>
 
-<li><p><strong>Retrieve the requested channel object using functions from the slack-client library</strong></p>
+<li><p><strong>Retrieve the requested channel object using functions from the <em>slack-client</em> library</strong></p>
 
-<p>I couldn't find robust documentation of all the functions available in the slack-client library, but you can see what most of your options are by looking at the library code. For example, the function we'll be using to get a channel object by it's name [can be found here](https://github.com/slackhq/node-slack-client/blob/master/src/client.coffee#L293).</p></li>
+<p>I couldn't find robust documentation of all the functions available in the <em>slack-client</em> library, but you can see what most of your options are by looking at the library code. For example, the function we'll be using to get a channel object by it's name <a href="https://github.com/slackhq/node-slack-client/blob/master/src/client.coffee#L293">can be found here</a>.</p></li>
 
 <li><p><strong>Check to verify if we've returned a valid channel object</strong></p></li>
 
@@ -98,13 +98,13 @@ Let's start by listing out what we'll be doing in our bot code:
 
 <li><p><strong>Get the message history for the channel using a custom API call</strong></p>
 
-<p>I couldn't get the _slack-client_ library's history-fetching functions to work for me, so I decided to write my own API call function instead. It turns out that writing a JavaScript function to make an API call for a channel or group is actually pretty simple. You can use the standard httprequest format, and follow the url format listed in the slack API docs (https://api.slack.com/methods/channels.history). The url format for our channels.history API call will be as follows: _https://YOURTEAM.slack.com/api/channels.history?token=YOURTOKEN&amp;channel=CHANNELID_.</p>
+<p>I couldn't get the <em>slack-client</em> library's history-fetching functions to work for me, so I decided to write my own API call function instead. It turns out that writing a JavaScript function to make an API call for a channel or group is actually pretty simple. You can use the standard httprequest format, and follow the url format listed in the slack API docs (https://api.slack.com/methods/channels.history). The url format for our <em>channels.history</em> API call will be as follows: _https://YOURTEAM.slack.com/api/channels.history?token=YOURTOKEN&amp;channel=CHANNELID_.</p>
 
-<p>Our http request is going to run asynchronously, so remember that asynchronous functions just kind of run whenever it's convenient! This means that once we get our result from the API call, we need to put all the code that is going to do something with the returned data _inside_ our function.</p>
+<p>Our http request is going to run asynchronously, so remember that asynchronous functions just kind of run whenever it's convenient! This means that once we get our result from the API call, we need to put all the code that is going to do something with the returned data <em>inside</em> our function.</p>
 
 <p>FYI, the <em>channels.history</em> API call, in its default form, maxes out at 100 messages. I'm pretty sure there's a way to get more pages of results after that, but I didn't bother trying to add that functionality. If there are more than 100 tasks between me and an unresolved task, I have bigger problems.</p></li>
 
-<li><p><strong>Parse the returned messages to make them readable</strong></p></li>
+<li><p><strong>Parse the returned messages to make them readable JSON objects</strong></p></li>
 <li><p><strong>Filter for messages that don't have reactions</strong></p></li>
 <li><p><strong>Combine our array of unresolved messages into one line so the bot can send just one message to slack</strong></p>
 
