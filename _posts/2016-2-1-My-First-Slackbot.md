@@ -3,6 +3,8 @@ layout: post
 title: Building a Slack Bot to Query Channel History
 ---
 
+Posted by [Nellie McKesson](http://macmillanpublishers.github.io/blog/about/)
+
 I spent the last couple days building my first Slack bot, whose continuing mission is to search through all the past messages in a channel and tell me which messages don't have emoji reactions (a useful addition to my task management workflow).
 
 In this post, I will:
@@ -55,8 +57,9 @@ $ npm app.js
 
 Here's what you'll see with the final app:
 
-<img src="bot-final-1" alt="The Slack client displaying the bot query and results"/>
-<img src="bot-final-2" alt="The terminal showing a successful query"/>
+<img src="https://raw.githubusercontent.com/macmillanpublishers/blog/gh-pages/images/bot-final-1.png" alt="The Slack client displaying the bot query and results"/>
+
+<img src="https://raw.githubusercontent.com/macmillanpublishers/blog/gh-pages/images/bot-final-2.png" alt="The terminal showing a successful query"/>
 
 This bot lives and runs locally via node, and needs to be started up when you want to use it. The next step would be to put it on a real web server (like Heroku) so everyone can use it whenever they want.
 

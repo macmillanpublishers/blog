@@ -4,12 +4,18 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+Macmillan Publishers, a distinctive group of publishing companies, has a rich history in the book industry. Our companies publish a broad range of quality works—including award-winning fiction and nonfiction, and inspired and much-loved children’s books. A forward-looking company, we’re dedicated to making our books available in whatever format our readers prefer, and we foster reader discussion through innovative community websites. Macmillan Publishers is committed to our authors, our employees, and to the environment.
 
-### More Information
+Macmillan Publishers is a global trade publishing company, owned by Verlagsgruppe Georg von Holtzbrinck, with imprints in the United States, Germany, the United Kingdom, Australia, South Africa, and around the world. [Read more about us here](http://us.macmillan.com/about).
 
-A place to include any other types of information that you'd like to include about yourself.
+### The Workflows Team
+
+This blog collects posts from Macmillan's Workflows team, who are responsible for looking at the way Macmillan Publishers make books, and finding ways to do it better. The blog's contributors are:
+
+#### [Nellie McKesson](http://twitter.com/nelliemckesson), Sr. Mgr., Content Workflows
+
+<img src="https://github.com/macmillanpublishers/blog/blob/gh-pages/images/team_photo_nellie.jpg"/>
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[workflows@macmillan.com](mailto:workflows@macmillan.com)
