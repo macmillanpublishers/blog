@@ -5,7 +5,7 @@ title: Building a Slack Bot to Query Channel History
 
 Posted by [Nellie McKesson](http://macmillanpublishers.github.io/blog/about/)
 
-I spent the last couple days building my first Slack bot, whose continuing mission is to search through all the past messages in a channel and tell me which messages don't have emoji reactions (a useful addition to my task management workflow).
+I spent the last couple days building my first Slack bot, which can search through all the past messages in a channel and tell me which messages don't have emoji reactions (a useful addition to my task management workflow).
 
 In this post, I will:
 
@@ -15,7 +15,7 @@ In this post, I will:
 * Give the full final code, with inline commenting to walk through what is happening
 * Provide a couple of links to resources I reference
 
-**Who is this for?** While pretty much anyone should be able to understand the background and the general idea of what I'm doing, this post is mostly targeted at people like me, who like to skim through articles and look directly at code to figure out how to do things. I'm not going to dive too deeply into the principles of each step, or why I structured my code certain ways. I also won't walk through setting up node or other basic prerequisites, but there are lots of resources on the internet about that. You can do it!
+**Who is this for?** While pretty much anyone should be able to understand the background and the general idea of what I'm doing, this post is mostly targeted at people like me, who like to skim through articles and look directly at code to figure out how to do things. I'm not going to dive too deeply into the principles of each step, or why I structured my code certain ways. I also won't walk through setting up node or other basic prerequisites, but there are lots of resources on the internet about that. Believe in yourself.
 
 ## Background
 
@@ -27,9 +27,9 @@ Shortly after we started using Slack on our team in 2014, it also became my task
 
 I use a private channel for logging my tasks, and give them a green checkmark as I complete them, or a skull to kill the task. I'm usually pretty good about tagging tasks as either dead or complete, but every once in a while a task slips through the cracks, and gets buried in my channel history. Slack doesn't have a way to round up and list my "unresolved" (i.e. un-marked) "tasks" (i.e., messages), so I decided to build a bot to do it.
 
-I don't have a ton of experience writing node apps. I've written a few things here and there, but so far I haven't written enough for it to become something I can just rattle off the top of my head. But I like a challenge.
+I don't have a ton of experience writing node apps. I've written a few things here and there, but so far I haven't written enough for it to become something I can just rattle off the top of my head. But learning is cool! So I decided to go with node.
 
-I started this off the way I start most of these kind of projects: by going to Google to see if anyone has ever done anything like this before. I found two blog posts that became my jumping off points (and I even ended up borrowing some of each of their code in the final bot):
+I started this off the way I start most of these kinds of projects: by going to Google to see if anyone has ever done anything like this before. I found two blog posts that became my jumping off points (and I even ended up borrowing some of each of their code in the final bot):
 
 * [Jeff Yates' Somewhat Abstract blog: "Writing A Simple Slack Bot With Node slack-client"](http://blog.somewhatabstract.com/2015/03/02/writing-a-simple-slack-bot-with-node-slack-client/)
 * [Nordic APIS blog: "Building an Intelligent Bot Using the Slack API" by Dennis Hotson](http://nordicapis.com/building-an-intelligent-bot-using-the-slack-api/)
@@ -38,7 +38,7 @@ Both projects started with the _slack-client_ API wrapper, so I went ahead and u
 
 ## Setup
 
-In order to test and ultimately run TaskBot, you need to set up the integration for your slack team. Don't be intimidated: it's very easy and there's no real risk (you're not using up precious resources or anything). [Follow this link to your Slack settings](https://my.slack.com/services/new/bot), pick a username, and add the integration. Slack will return an API token when the bot is activated--copy this! You'll need it in the final code.
+In order to test and ultimately run TaskBot, you need to set up the integration for your Slack team. Don't be intimidated: it's very easy and there's no real risk (you're not using up precious resources or anything). [Follow this link to your Slack settings](https://my.slack.com/services/new/bot), pick a username for your bot, and add the integration. Slack will return an API token when the bot is activated--copy this! You'll need it in the final code.
 
 Once the integration is set up, you'll also need to invite your bot to some channels. She needs to be a member of any channels you want her to participate in (or, in this case, analyze). Invite her the same way you'd invite any user.
 
@@ -49,13 +49,13 @@ $ npm install xmlhttprequest
 $ npm install slack-client
 ```
 
-That ought to do it! Once you've got the code finalized and saved as a .js file (I called mine _app.js_), launch Terminal and the Slack app, and run the app via the command line like this:
+That ought to do it! Once you've got the code finalized (see the next couple sections of this post) and saved as a .js file (I called mine _app.js_), launch Terminal and the Slack app, and run the app via the command line like this:
 
 ```
-$ npm app.js
+$ node app.js
 ```
 
-Here's what you'll see with the final app:
+Here's what you'll see in the Slack app and in the terminal when you make a request to the bot with the final app:
 
 <img src="https://raw.githubusercontent.com/macmillanpublishers/blog/gh-pages/images/bot-final-1.png" alt="The Slack client displaying the bot query and results"/>
 
@@ -65,13 +65,14 @@ This bot lives and runs locally via node, and needs to be started up when you wa
 
 ## The App Logic
 
-Let's start by listing out what we'll be doing in our bot code:
+I start most of my new projects by writing out the logic of what my app will need to do. Of course things change as I start coding, but it's a great way to start thinking through how you'll need to structure things and where the dependencies are. Here's a linear outline of what we'll be doing in our bot code:
 
 <ol>
+<li><p><strong>Watch a channel for messages</strong></p></li>
 <li><p><strong>Ignore the bot's own messages</strong></p></li>
 <li><p><strong>Get the current channel, so we know where to post messages to later</strong></p>
 
-<p>FYI, your bot needs to be a member of any channels that you want her to be active in. Invite her the same way you'd invite any other user.</p></li>
+<p>FYI, your bot needs to be a member of any channels that you want her to be active in--this means both channels where you're planning to talk to her, and channels that you want her to analyze (I don't want my bot--who I shall call TaskBot--posting in my tasks channel, so I'm planning on talking to her and asking her to post my task lists in a different channel). Invite her the same way you'd invite any other user.</p></li>
 
 <li><p><strong>Only respond to messages directed at this bot</strong></p>
 
@@ -139,7 +140,7 @@ var slackClient = new SlackClient(token, autoReconnect);
 var bot;
 
 // We'll define our own custom API call to get channel history
-// See the note for step 9 above
+// See the note for step 10 above
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 var getChannelHistory = function() {
@@ -211,7 +212,7 @@ slackClient.on('message', function(message) {
   if (message.type === 'message' && message.text.length >= 0 && message.text.indexOf(slackClient.self.id) > -1) { 
     // Take the message that was sent to the bot
     // And split off just the relevant bit
-    // See the note for step 3 above
+    // See the note for step 4 above
     searchString = message.text.split(" ").pop();
 
     // Print out the name of the channel the bot is analyzing
