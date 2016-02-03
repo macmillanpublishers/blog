@@ -3,26 +3,30 @@ layout: post
 title: Building My First Slackbot to Query Channel History
 ---
 
+In this post, I will:
+
+* Give a little bit of background
+* Run through the logic of what exactly this app will do, with some notes about discoveries I made along the way
+* Walk through some required initial setup (set up the Slack integration, install a couple of node libraries)
+* Provide a couple of links to resources I reference
+* Give the full final code, with inline commenting to walk through what is happening
+
+## Background
+
 We started using Slack in the fall of 2014, and at the time we weren’t totally sure how it was going to fit in to our workflow. Somehow between then and now, slack became my task management tool. I wanted a simple task management interface, where I could add tasks quickly from anywhere, and see at a glance whether a task was completed. Slack already had this functionality built-in: messaging, and emoji reactions. So I created a private channel for logging my tasks, and give them a green checkmark as I complete them, or a skull to kill the task. I'm usually pretty good about tagging tasks as either dead or complete, but every once in a while one slips through the cracks, and gets buried in my channel history. The one thing Slack is missing is a way to round up all those unresolved tasks and list them for me. This seemed like a great reason to build my first bot.
 
 I don't have a ton of experience writing node apps. I've written a few things here and there, but so far I haven't written enough for it to become something I can just rattle off the top of my head. But I figured, what the hey! Let's do this with node.
 
 I started this off the way I start most of these kind of projects: by going to Google to see if anyone has ever done anything like this before. I found two blog posts that became my jumping off points (and I even ended up borrowing some of each of their code in the final product):
 
-http://blog.somewhatabstract.com/2015/03/02/writing-a-simple-slack-bot-with-node-slack-client/
-http://nordicapis.com/building-an-intelligent-bot-using-the-slack-api/
+* http://blog.somewhatabstract.com/2015/03/02/writing-a-simple-slack-bot-with-node-slack-client/
+* http://nordicapis.com/building-an-intelligent-bot-using-the-slack-api/
 
 Both projects had started with the slack-client API wrapper, so I went ahead and used that as my base as well.
 
-## A Few Notes Up Front
+## The App Logic
 
-* The channels.history call, in its default form, maxes out at 100 messages. I'm pretty sure there's a way to get more pages of results after that, but I didn't bother trying to add that functionality. If there are more than 100 tasks between me and an unresolved task, I have bigger problems.
-
-* This bot lives and runs locally via node, and needs to be started up when you want to use it. The next step would be to put it on a real web server (like Heroku) so everyone can use it whenever they want.
-
-## Our Logic
-
-Alright, so here's what we'll be doing in our bot code:
+Let's start by listing out what we'll be doing in our bot code:
 
 <ol>
 <li><p>Ignore the bot's own messages</p></li>
@@ -80,6 +84,17 @@ Additionally, we'll be using two libraries that need to be installed via npm:
 
 npm install xmlhttprequest
 npm install slack-client --save
+
+## A Few Notes Up Front
+
+* The channels.history API call, in its default form, maxes out at 100 messages. I'm pretty sure there's a way to get more pages of results after that, but I didn't bother trying to add that functionality. If there are more than 100 tasks between me and an unresolved task, I have bigger problems.
+
+* This bot lives and runs locally via node, and needs to be started up when you want to use it. The next step would be to put it on a real web server (like Heroku) so everyone can use it whenever they want.
+
+## Helpful Links
+
+* The slack-client library: https://www.npmjs.com/package/slack-client
+* The Slack API docs: https://api.slack.com/methods
 
 ## Final Result
 
