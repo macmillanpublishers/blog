@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Building a Slack Bot to Query Channel History
+title: Building a Slack Bot with Node.js to Query Channel History
 ---
 
 Posted by [Nellie McKesson](http://macmillanpublishers.github.io/blog/about/)
