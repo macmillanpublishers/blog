@@ -8,9 +8,9 @@ Macmillan Publishers, a distinctive group of publishing companies, has a rich hi
 
 Macmillan Publishers is a global trade publishing company, owned by Verlagsgruppe Georg von Holtzbrinck, with imprints in the United States, Germany, the United Kingdom, Australia, South Africa, and around the world. [Read more about us here](http://us.macmillan.com/about).
 
-### The Workflows Team
+This blog collects posts from Macmillan's Workflows team, whose continuing mission is to seek out new technologies and new ways to make books (and to boldly go etc. etc.). 
 
-This blog collects posts from Macmillan's Workflows team, who are responsible for looking at the way Macmillan Publishers make books, and finding ways to do it better. The blog's contributors are:
+### Contributors
 
 #### [Nellie McKesson](http://twitter.com/nelliemckesson), Sr. Mgr., Content Workflows
 
