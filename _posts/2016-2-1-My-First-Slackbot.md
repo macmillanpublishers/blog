@@ -5,18 +5,6 @@ title: Building a Slack Bot to Query Channel History
 
 Posted by [Nellie McKesson](http://macmillanpublishers.github.io/blog/about/)
 
-I spent the last couple days building my first Slack bot, which can search through all the past messages in a channel and tell me which messages don't have emoji reactions (a useful addition to my task management workflow).
-
-In this post, I will:
-
-* Give a little bit of background about why I built this bot
-* Go over some required initial setup (set up the Slack integration, install a couple of node libraries)
-* Run through the logic of what exactly this app will do, with some notes about discoveries I made along the way
-* Give the full final code, with inline commenting to walk through what is happening
-* Provide a couple of links to resources I reference
-
-**Who is this for?** While pretty much anyone should be able to understand the background and the general idea of what I'm doing, this post is mostly targeted at people like me, who like to skim through articles and look directly at code to figure out how to do things. I'm not going to dive too deeply into the principles of each step, or why I structured my code certain ways. I also won't walk through setting up node or other basic prerequisites, but there are lots of resources on the internet about that. Believe in yourself.
-
 ## Background
 
 Shortly after we started using Slack on our team in 2014, it also became my task management tool. I hate having my notes spread over multiple systems, and Slack meets all my main task-management-system requirements: 
@@ -37,6 +25,8 @@ I started this off the way I start most of these kinds of projects: by going to 
 Both projects started with the _slack-client_ API wrapper, so I went ahead and used that as my base as well.
 
 ## Setup
+
+I'm going to start off by going over some of the set up involved in building my "TaskBot" (as she shall hereafter be known), and giving you a preview of the final result. I'm not going to walk you through how to install node or any of the other basic prerequisites, but there are a lot of resources online about that--believe in yourself.
 
 In order to test and ultimately run TaskBot, you need to set up the integration for your Slack team. Don't be intimidated: it's very easy and there's no real risk (you're not using up precious resources or anything). [Follow this link to your Slack settings](https://my.slack.com/services/new/bot), pick a username for your bot, and add the integration. Slack will return an API token when the bot is activated--copy this! You'll need it in the final code.
 
@@ -65,14 +55,17 @@ This bot lives and runs locally via node, and needs to be started up when you wa
 
 ## The App Logic
 
-I start most of my new projects by writing out the logic of what my app will need to do. Of course things change as I start coding, but it's a great way to start thinking through how you'll need to structure things and where the dependencies are. Here's a linear outline of what we'll be doing in our bot code:
+Alright, we've seen what the bot will do and how to run it, so let's take a step back and talk about how to actually build it. I start most of my new projects by writing out the logic of what my app will need to do. Of course things change as I start coding, but it's a great way to start thinking through how you'll need to structure things and where the dependencies are. Here's a linear outline of what we'll be doing in our bot code:
 
 <ol>
 <li><p><strong>Watch a channel for messages</strong></p></li>
-<li><p><strong>Ignore the bot's own messages</strong></p></li>
+<li><p><strong>Ignore the bot's own messages</strong></p>
+
+<p>Let's not create an infinite loop.</p></li>
+
 <li><p><strong>Get the current channel, so we know where to post messages to later</strong></p>
 
-<p>FYI, your bot needs to be a member of any channels that you want her to be active in--this means both channels where you're planning to talk to her, and channels that you want her to analyze (I don't want my bot--who I shall call TaskBot--posting in my tasks channel, so I'm planning on talking to her and asking her to post my task lists in a different channel). Invite her the same way you'd invite any other user.</p></li>
+<p>Your bot needs to be a member of any channels that you want her to be active in--this means both channels where you're planning to talk to her, and channels that you want her to analyze (I don't want my bot--who I shall call TaskBot--posting in my tasks channel, so I'm planning on talking to her and asking her to post my task lists in a different channel). Invite her the same way you'd invite any other user.</p></li>
 
 <li><p><strong>Only respond to messages directed at this bot</strong></p>
 
@@ -106,8 +99,11 @@ I start most of my new projects by writing out the logic of what my app will nee
 <p>FYI, the <em>channels.history</em> API call, in its default form, maxes out at 100 messages. I'm pretty sure there's a way to get more pages of results after that, but I didn't bother trying to add that functionality. If there are more than 100 tasks between me and an unresolved task, I have bigger problems.</p></li>
 
 <li><p><strong>Parse the returned messages to make them readable JSON objects</strong></p></li>
-<li><p><strong>Filter for messages that don't have reactions</strong></p></li>
-<li><p><strong>Combine our array of unresolved messages into one line so the bot can send just one message to slack</strong></p>
+<li><p><strong>Filter for messages that don't have reactions</strong></p>
+
+<p>"Reactions" are the emojis people add--in this case, my check marks and skulls. For my purposes, it doesn't matter which reaction is attached to a message; all that matters is whether a reaction is present or not.</p></li>
+
+<li><p><strong>Combine our array of unresolved messages into one line so the bot can send just one message to Slack</strong></p>
 
 <p>Instead of printing each unresolved task as it's own message to Slack, I want the bot to just post a single list of my unresolved tasks. We can use new lines (\n) in Slack messages to create line breaks within a single message.</p></li>
 
@@ -118,7 +114,7 @@ I start most of my new projects by writing out the logic of what my app will nee
 
 ## The App Code
 
-And here's the full code, with comments inline to walk you through what's happening:
+And here's ALL the final code, with comments inline to walk you through what's happening. I’m not going to explain this step-by-step or dive too deeply into the principles of each step, or why I structured my code certain ways. If you're like me, and you like to learn by looking at code and trying stuff out, then you should feel right at home. Below the code there are a few links to resources I reference, and then we're done!
 
 ```javascript
 // We're using the slack-client library
